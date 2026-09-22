@@ -195,6 +195,8 @@ audio{width:100%;height:42px;margin-top:2px}
           <button id="recordBtn" class="rec-btn rec-start" disabled>🎙 Mulai Rekam</button>
           <button id="stopBtn" class="rec-btn rec-stop" disabled>■ Hentikan</button>
         </div>
+        <button id="dictationBtn" type="button" class="btn btn-light" style="width:100%;margin-top:10px">🎙 Bicara ke Teks dengan Mikrofon HP</button>
+        <div id="dictationHelp" class="notice info" style="margin-top:10px">Tekan tombol ini, lalu ketuk ikon 🎙 pada keyboard HP dan ucapkan jawaban. Teks akan masuk ke kotak di bawah dan dapat diperiksa sebelum disimpan.</div>
         <div class="wave"><i></i></div>
         <audio id="audioPreview" controls class="hidden"></audio>
       </div>
@@ -403,33 +405,27 @@ function startRecognition(){
     lang:'id-ID',
     onFinal:(text)=>{
       if(text) state.transcriptFinal+=(state.transcriptFinal?' ':'')+text;
-      $('transcriptText').value=(state.transcriptFinal+' '+(state.transcriptInterim||'')).trim()||'Mendengarkan...';
+      $('transcriptText').value=state.transcriptFinal;
       $('transcriptBox').classList.remove('empty');
       updateSaveButton();
     },
     onInterim:(text)=>{
-      state.transcriptInterim=text||'';
-      $('transcriptText').value=(state.transcriptFinal+' '+state.transcriptInterim).trim()||'Mendengarkan...';
+      const preview=(state.transcriptFinal+' '+(text||'')).trim();
+      $('transcriptText').value=preview;
       $('transcriptBox').classList.remove('empty');
     },
     onError:(err)=>{
       if(err && (err.error==='not-allowed'||err.error==='service-not-allowed')){
-        setNotice('recordNotice','warn','Mikrofon atau pengenalan suara belum diizinkan. Rekaman tetap berjalan; teks akan diproses setelah rekaman selesai.');
+        setNotice('recordNotice','warn','Izin mikrofon/pengenalan suara belum diberikan. Untuk HP, gunakan tombol <b>Bicara ke Teks dengan Mikrofon HP</b> dan mikrofon pada keyboard.');
+      } else if(err && err.error){
+        setNotice('recordNotice','warn','Pengenalan suara browser berhenti. Anda tetap dapat menggunakan mikrofon keyboard HP atau mengetik jawaban.');
       }
     },
-    onEnd:()=>{
-      state.recognition=null;
-      if(state.recording&&!state.manualStop){
-        setTimeout(()=>{
-          if(state.recording&&!state.manualStop){
-            try{ startRecognition(); }catch(e){ state.recognitionAvailable=false; }
-          }
-        },250);
-      }
-    }
+    onEnd:()=>{ state.recognition=null; }
   });
   return state.recognition;
 }
+
 async function startRecording(){
   if(!state.selected||state.recording) return;
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
@@ -439,7 +435,8 @@ async function startRecording(){
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
     const mime=supportedMime();
     state.chunks=[];state.audioBlob=null;state.audioUrl='';state.manualStop=false;state.recording=true;state.seconds=0;
-    state.transcriptFinal='';state.transcriptInterim='';$('transcriptText').value='';$('transcriptBox').classList.add('empty');updateSaveButton();
+    state.transcriptFinal=$('transcriptText').value.trim();state.transcriptInterim='';
+    updateSaveButton();
     state.mediaRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
     state.mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)state.chunks.push(e.data)};
     state.mediaRecorder.onstop=async()=>{
@@ -452,37 +449,14 @@ async function startRecording(){
       $('recordBtn').disabled=false;$('stopBtn').disabled=true;
       $('recordBox').classList.remove('recording');
       $('timer').textContent=formatTime(state.seconds);
-      // Jangan simpan otomatis. Jika STT browser tidak menghasilkan teks,
-      // gunakan Whisper lokal di perangkat tanpa server/billing.
-      $('recStatus').textContent='Rekaman selesai. Memproses teks...';
-
-      if(state.transcriptFinal.trim()){
-        setNotice('recordNotice','info','Periksa kembali teks sebelum disimpan.');
-      }else{
-        setNotice('recordNotice','info','Memproses suara menjadi teks...');
-        try{
-          const txt=await window.MonevSTT.transcribeLocal(state.audioBlob);
-          state.transcriptFinal=(txt||'').trim();
-          $('transcriptText').value=state.transcriptFinal;
-          $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
-          if(state.transcriptFinal){
-            $('recStatus').textContent='Teks siap diperiksa.';
-            setNotice('recordNotice','info','Periksa dan koreksi teks sebelum disimpan.');
-          }else{
-            $('recStatus').textContent='Teks belum tersedia.';
-            setNotice('recordNotice','warn','Silakan tulis penjelasan pada kotak teks sebelum disimpan.');
-          }
-        }catch(err){
-          console.error(err);
-          $('recStatus').textContent='Rekaman selesai.';
-          setNotice('recordNotice','warn','Teks belum dapat dibuat otomatis. Silakan tulis atau gunakan fitur dikte pada keyboard HP.');
-        }
-      }
-
+      $('recStatus').textContent='Rekaman selesai. Audio asli tersimpan sementara; periksa teks sebelum menyimpan.';
+      setNotice('recordNotice','info','Jika teks belum ada, gunakan <b>Bicara ke Teks dengan Mikrofon HP</b> atau ketik langsung.');
       $('transcriptText').focus();
       updateSaveButton();
     };
     state.mediaRecorder.start(250);
+    // Browser STT hanya dipakai sebagai fasilitas tambahan pada perangkat yang mendukungnya.
+    // Tidak ada fallback Whisper agar hasil HP tidak diganti oleh transkripsi yang buruk.
     if(state.recognitionAvailable){
       try{ startRecognition(); }catch(err){ state.recognitionAvailable=false; }
     }
@@ -495,6 +469,7 @@ async function startRecording(){
     setNotice('recordNotice','error',e.message||'Mikrofon tidak dapat digunakan.');
   }
 }
+
 function stopRecording(){
   if(!state.recording) return;
   state.manualStop=true;
@@ -509,6 +484,22 @@ function stopEverything(){
 function formatTime(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 $('recordBtn').onclick=startRecording;
 $('stopBtn').onclick=stopRecording;
+
+// Dikte HP: fokus ke textarea agar keyboard HP terbuka. Pengguna menekan ikon mikrofon
+// pada Gboard/Samsung Keyboard. Ini menggunakan mesin STT bawaan HP, bukan server aplikasi.
+$('dictationBtn').onclick=()=>{
+  if(state.recording) return setNotice('recordNotice','warn','Hentikan rekaman terlebih dahulu.');
+  if(!state.selected) return setNotice('recordNotice','warn','Pilih YA atau TIDAK terlebih dahulu.');
+  setInputMode('TEXT');
+  const ta=$('transcriptText');
+  ta.focus();
+  ta.click();
+  setNotice('recordNotice','info','Kotak jawaban sudah aktif. Pada keyboard HP, tekan ikon 🎙 lalu ucapkan jawaban. Setelah selesai, periksa teks lalu klik <b>Simpan Jawaban</b>.');
+  $('recStatus').textContent='Silakan gunakan mikrofon pada keyboard HP.';
+  // Memudahkan perangkat mobile memunculkan keyboard tanpa memaksa input suara tertentu.
+  setTimeout(()=>{ try{ta.focus();}catch(e){} },150);
+};
+
 function setInputMode(mode){
   if(state.recording)return;
   state.inputMode=mode;
@@ -516,7 +507,7 @@ function setInputMode(mode){
   $('textModeBtn').classList.toggle('active',mode==='TEXT');
   show('voicePanel',mode==='VOICE');
   show('textPanel',false);
-  $('recStatus').textContent=mode==='VOICE' ? 'Pilih Mulai Rekam. Setelah selesai, periksa teks sebelum menyimpan.' : 'Ketik penjelasan pada kotak teks, periksa kembali, lalu simpan.';
+  $('recStatus').textContent=mode==='VOICE' ? 'Pilih Mulai Rekam untuk menyimpan audio. Untuk teks di HP, gunakan mikrofon keyboard.' : 'Gunakan mikrofon keyboard HP atau ketik penjelasan, periksa kembali, lalu simpan.';
   if(mode==='TEXT') $('transcriptText').focus();
   updateSaveButton();
 }
@@ -536,7 +527,7 @@ $('saveAnswerBtn').onclick=()=>saveCurrentAnswer(state.inputMode==='VOICE' && st
 async function saveCurrentAnswer(mode){
   const q=state.questions[state.index];
   const answer=state.answers[q.question_id]||{};
-  const text=(state.transcriptFinal||'').trim();
+  const text=(state.transcriptFinal||$('transcriptText').value||'').trim();
   if(!state.selected||!text) return;
   state.saving=true;$('saveState').textContent='Menyimpan...';$('nextBtn').disabled=true;$('recordBtn').disabled=true;$('saveAnswerBtn').disabled=true;
   setNotice('recordNotice','info','<span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span> Menyimpan jawaban...');
@@ -559,6 +550,8 @@ function blobToBase64(blob){
     const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=reject;r.readAsDataURL(blob);
   });
 }
+$('recordBtn').onclick=startRecording;
+$('stopBtn').onclick=stopRecording;
 $('prevBtn').onclick=()=>{
   if(state.index<=0)return;
   if(state.recording)return;
