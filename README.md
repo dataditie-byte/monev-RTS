@@ -1,32 +1,46 @@
-# Monev RTS Dit IE 2026 — Frontend v1.3
+# Monev RTS Dit IE 2026 — FULL V2
 
-Frontend GitHub Pages untuk Sistem Monitoring Remaja Teman Sebaya (RTS) Dit IE BNN T.A. 2026.
+Versi ini mengunci UX yang diminta:
 
-## Perubahan v1.3
-- Header/banner diperkecil dan tidak lagi dipaksa `min-height:360px`.
-- Pilihan GURU/SISWA menggunakan state JavaScript sebagai sumber kebenaran tunggal.
-- Pilihan aktif ditampilkan jelas sebelum tombol Mulai Pengisian.
-- Alur Mulai Pengisian divalidasi dengan `getQuestions` terlebih dahulu, lalu `createSession`.
-- Payload API mengirim `jenis_responden` dan `kelompok` pada level utama serta salinan `data`/`payload` untuk kompatibilitas router Apps Script.
-- Timeout API 25 detik dan pesan error dibuat lebih jelas.
-- Tidak ada API key Gemini di frontend.
-- Backend Apps Script production tidak diubah oleh repo ini.
+**Rekam → Hentikan → Transkripsi → Transkrip muncul di bawah audio → Simpan & Lanjut.**
 
-## Struktur
-- `index.html` — seluruh UI dan logika frontend.
-- `assets/` — logo BNN, Ananda Bersinar, dan header War On Drugs for Humanity.
-- `_config.yml` — konfigurasi GitHub Pages.
-- `.gitignore` — pengecualian file lokal.
+Transkripsi dilakukan langsung setelah rekaman berhenti menggunakan Gemini 3.5 Transcribe melalui backend Apps Script. Google mendokumentasikan `gemini-3.5-transcribe` untuk file audio dan `gemini-3.5-transcribe-live` untuk streaming real-time. Versi ini menggunakan file transcription karena alurnya cocok dengan tombol Hentikan dan tetap menyimpan audio asli.
 
-## API Backend
-URL Apps Script production sudah diatur di `index.html` pada `API_URL`.
+## Isi
+- `index.html` — frontend GitHub Pages
+- `Code.gs` — backend Apps Script V2
+- `appsscript.json` — scope Apps Script
+- `assets/` — logo dan artwork
 
-## Deploy
-1. Upload/replace seluruh isi repo dengan isi folder ini.
-2. Pastikan GitHub Pages memakai branch/folder yang benar.
-3. Setelah deploy, lakukan hard refresh `Ctrl + F5`.
-4. Footer harus menampilkan `Frontend v1.3`.
-5. Pilih Guru atau Siswa sampai muncul `Pilihan aktif: ...`.
-6. Klik `Mulai Pengisian`.
+## Script Properties
+Set:
+- `SPREADSHEET_ID`
+- `GEMINI_API_KEY`
 
-> Backend `Code.gs`, Spreadsheet, Drive, Queue AI, dan Gemini tetap berada di Apps Script dan tidak disentuh oleh frontend ini.
+## CONFIG
+Pastikan:
+- `GEMINI_MODEL_TRANSCRIBE = gemini-3.5-transcribe`
+- `DRIVE_FOLDER_NAME = Monev_RTS_DitIE_2026_Audio`
+- `QUEUE_BATCH_SIZE = 3`
+- `MAX_RETRY = 4`
+
+## Alur
+1. Frontend mengambil pertanyaan sekali.
+2. Session dibuat.
+3. User memilih YA/TIDAK.
+4. User merekam.
+5. User menekan Hentikan.
+6. Audio dikirim ke backend.
+7. Backend menyimpan audio asli ke Drive.
+8. Backend meminta Gemini membuat transkripsi Bahasa Indonesia mode smart.
+9. Frontend menerima transkrip dan langsung menampilkannya di bawah audio.
+10. Tombol Simpan & Lanjut aktif.
+11. Backend menyimpan YA/TIDAK + audio + transkrip ke `JAWABAN`.
+12. Soal berikutnya tampil tanpa mengambil pertanyaan dari server lagi.
+13. Pada soal terakhir, `finishSession` memverifikasi seluruh pertanyaan memiliki jawaban dan transkripsi.
+
+## Catatan
+- API key tidak pernah berada di frontend.
+- Jika Gemini gagal setelah audio tersimpan, backend membuat fallback `QUEUE_AI`.
+- Queue worker dapat dipasang dengan `installQueueTrigger()` untuk retry.
+- Jangan mengubah backend Form Satker production.
