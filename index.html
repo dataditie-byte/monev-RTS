@@ -228,69 +228,7 @@ audio{width:100%;height:42px;margin-top:2px}
 <div class="footer">Monev RTS Dit IE 2026</div>
 </main>
 
-<script type="module">
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0/+esm";
-
-let localTranscriber = null;
-let localTranscriberPromise = null;
-
-async function getLocalTranscriber() {
-  if (localTranscriber) return localTranscriber;
-  if (localTranscriberPromise) return localTranscriberPromise;
-
-  localTranscriberPromise = (async () => {
-    const opts = navigator.gpu ? { device: "webgpu" } : {};
-    return await pipeline(
-      "automatic-speech-recognition",
-      "onnx-community/whisper-tiny",
-      opts
-    );
-  })();
-
-  try {
-    localTranscriber = await localTranscriberPromise;
-    return localTranscriber;
-  } finally {
-    localTranscriberPromise = null;
-  }
-}
-
-async function blobTo16kMono(blob) {
-  const buffer = await blob.arrayBuffer();
-  const AC = window.AudioContext || window.webkitAudioContext;
-  const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-  if (!AC || !Offline) throw new Error("Pemrosesan audio tidak tersedia.");
-
-  const ctx = new AC();
-  try {
-    const decoded = await ctx.decodeAudioData(buffer);
-    const frames = Math.max(1, Math.ceil(decoded.duration * 16000));
-    const offline = new Offline(1, frames, 16000);
-    const source = offline.createBufferSource();
-    source.buffer = decoded;
-    source.connect(offline.destination);
-    source.start(0);
-    const rendered = await offline.startRendering();
-    return rendered.getChannelData(0);
-  } finally {
-    try { await ctx.close(); } catch(e) {}
-  }
-}
-
-async function localWhisperTranscribe(blob) {
-  const transcriber = await getLocalTranscriber();
-  const audio = await blobTo16kMono(blob);
-  const result = await transcriber(audio, {
-    language: "indonesian",
-    task: "transcribe",
-    chunk_length_s: 30,
-    stride_length_s: 5
-  });
-  return String(result?.text || "").trim();
-}
-
-window.localWhisperTranscribe = localWhisperTranscribe;
-</script>
+<script type="module" src="stt.js"></script>
 
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbyLcNTNZyZUfopI50Fw2HmX8fJPGJPcvS3RsLUxl8geydfHE7yF-a9MeszT_Eynq9Dp/exec';
@@ -360,8 +298,7 @@ function updateStart(){
 fields.forEach(k=>$(k).addEventListener('input',updateStart));
 
 function setupSpeech(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  state.recognitionAvailable=!!SR;
+  state.recognitionAvailable=!!(window.MonevSTT && window.MonevSTT.browserSupported());
   updateStart();
 }
 setupSpeech();
@@ -461,34 +398,37 @@ function supportedMime(){
   return list.find(x=>window.MediaRecorder&&MediaRecorder.isTypeSupported(x))||'';
 }
 function startRecognition(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR) throw new Error('Browser tidak mendukung transkripsi suara.');
-  const rec=new SR();
-  rec.lang='id-ID';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
-  rec.onresult=e=>{
-    let interim='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      const text=e.results[i][0].transcript.trim();
-      if(e.results[i].isFinal && text) state.transcriptFinal+=(state.transcriptFinal?' ':'')+text;
-      else interim+=(interim?' ':'')+text;
+  if(!window.MonevSTT) throw new Error('Modul suara belum siap.');
+  state.recognition=window.MonevSTT.startBrowser({
+    lang:'id-ID',
+    onFinal:(text)=>{
+      if(text) state.transcriptFinal+=(state.transcriptFinal?' ':'')+text;
+      $('transcriptText').value=(state.transcriptFinal+' '+(state.transcriptInterim||'')).trim()||'Mendengarkan...';
+      $('transcriptBox').classList.remove('empty');
+      updateSaveButton();
+    },
+    onInterim:(text)=>{
+      state.transcriptInterim=text||'';
+      $('transcriptText').value=(state.transcriptFinal+' '+state.transcriptInterim).trim()||'Mendengarkan...';
+      $('transcriptBox').classList.remove('empty');
+    },
+    onError:(err)=>{
+      if(err && (err.error==='not-allowed'||err.error==='service-not-allowed')){
+        setNotice('recordNotice','warn','Mikrofon atau pengenalan suara belum diizinkan. Rekaman tetap berjalan; teks akan diproses setelah rekaman selesai.');
+      }
+    },
+    onEnd:()=>{
+      state.recognition=null;
+      if(state.recording&&!state.manualStop){
+        setTimeout(()=>{
+          if(state.recording&&!state.manualStop){
+            try{ startRecognition(); }catch(e){ state.recognitionAvailable=false; }
+          }
+        },250);
+      }
     }
-    state.transcriptInterim=interim;
-    $('transcriptText').value=(state.transcriptFinal+' '+interim).trim()||'Mendengarkan...';
-    $('transcriptBox').classList.remove('empty');
-  };
-  rec.onerror=e=>{
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
-      setNotice('recordNotice','error','Izin mikrofon/pengenalan suara ditolak. Izinkan mikrofon pada browser lalu coba lagi.');
-    }else if(e.error!=='aborted'){
-      setNotice('recordNotice','warn','Pengenalan suara sempat terhenti. Sistem akan mencoba melanjutkan selama perekaman masih aktif.');
-    }
-  };
-  rec.onend=()=>{
-    if(state.recording&&!state.manualStop){
-      setTimeout(()=>{if(state.recording&&!state.manualStop) try{startRecognition()}catch(e){}},180);
-    }
-  };
-  state.recognition=rec;rec.start();
+  });
+  return state.recognition;
 }
 async function startRecording(){
   if(!state.selected||state.recording) return;
@@ -521,7 +461,7 @@ async function startRecording(){
       }else{
         setNotice('recordNotice','info','Memproses suara menjadi teks...');
         try{
-          const txt=await window.localWhisperTranscribe(state.audioBlob);
+          const txt=await window.MonevSTT.transcribeLocal(state.audioBlob);
           state.transcriptFinal=(txt||'').trim();
           $('transcriptText').value=state.transcriptFinal;
           $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
@@ -544,16 +484,9 @@ async function startRecording(){
     };
     state.mediaRecorder.start(250);
     if(state.recognitionAvailable){
-      try{
-        startRecognition();
-        $('recStatus').textContent='Merekam... silakan berbicara.';
-      }catch(err){
-        state.recognitionAvailable=false;
-        $('recStatus').textContent='Merekam... silakan berbicara.';
-      }
-    }else{
-      $('recStatus').textContent='Merekam... silakan berbicara.';
+      try{ startRecognition(); }catch(err){ state.recognitionAvailable=false; }
     }
+    $('recStatus').textContent='Merekam... silakan berbicara.';
     $('recordBtn').disabled=true;$('stopBtn').disabled=false;
     $('recordBox').classList.add('recording');
     state.timer=setInterval(()=>{$('timer').textContent=formatTime(++state.seconds)},1000);
@@ -565,12 +498,12 @@ async function startRecording(){
 function stopRecording(){
   if(!state.recording) return;
   state.manualStop=true;
-  if(state.recognition){try{state.recognition.stop()}catch(e){}}
+  if(state.recognition){try{window.MonevSTT.stopBrowser()}catch(e){} state.recognition=null;}
   $('recStatus').textContent='Mengakhiri rekaman...';
   if(state.mediaRecorder&&state.mediaRecorder.state!=='inactive') state.mediaRecorder.stop();
 }
 function stopEverything(){
-  if(state.recording){state.manualStop=true;try{state.recognition&&state.recognition.stop()}catch(e){}try{state.mediaRecorder&&state.mediaRecorder.stop()}catch(e){}}
+  if(state.recording){state.manualStop=true;try{window.MonevSTT&&window.MonevSTT.stopBrowser()}catch(e){} state.recognition=null;try{state.mediaRecorder&&state.mediaRecorder.stop()}catch(e){}}
   clearInterval(state.timer);state.timer=null;
 }
 function formatTime(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
