@@ -1,46 +1,23 @@
-# Monev RTS Dit IE 2026 — FULL V2
+# Monev RTS Dit IE 2026 — Paket Full Final
 
-Versi ini mengunci UX yang diminta:
+Paket ini menggabungkan frontend, backend Apps Script, instrumen pertanyaan final, aset header BNN/Ananda Bersinar, transkripsi Gemini Bahasa Indonesia, penyimpanan audio Drive, queue retry, resume session, dan penyelesaian pengisian.
 
-**Rekam → Hentikan → Transkripsi → Transkrip muncul di bawah audio → Simpan & Lanjut.**
+## Instrumen terkunci
+- Guru Pendamping RTS: 18 pertanyaan
+- Siswa/Fasilitator RTS: 9 pertanyaan
+- Jawaban: YA/TIDAK
+- Penjelasan: rekaman suara
+- Transkripsi: Bahasa Indonesia
 
-Transkripsi dilakukan langsung setelah rekaman berhenti menggunakan Gemini 3.5 Transcribe melalui backend Apps Script. Google mendokumentasikan `gemini-3.5-transcribe` untuk file audio dan `gemini-3.5-transcribe-live` untuk streaming real-time. Versi ini menggunakan file transcription karena alurnya cocok dengan tombol Hentikan dan tetap menyimpan audio asli.
+## API
+Web App Apps Script: https://script.google.com/macros/s/AKfycbyLcNTNZyZUfopI50Fw2HmX8fJPGJPcvS3RsLUxl8geydfHE7yF-a9MeszT_Eynq9Dp/exec
 
-## Isi
-- `index.html` — frontend GitHub Pages
-- `Code.gs` — backend Apps Script V2
-- `appsscript.json` — scope Apps Script
-- `assets/` — logo dan artwork
+## Catatan deploy
+1. Gunakan Spreadsheet final pada paket.
+2. Deploy `Code.gs` sebagai Web App.
+3. Script Properties: `SPREADSHEET_ID` dan `GEMINI_API_KEY`.
+4. Model transkripsi: `gemini-3.5-transcribe`.
+5. Pasang trigger `installQueueTrigger()` sekali setelah deploy.
+6. Frontend `index.html` dan folder `assets/` di GitHub Pages.
 
-## Script Properties
-Set:
-- `SPREADSHEET_ID`
-- `GEMINI_API_KEY`
-
-## CONFIG
-Pastikan:
-- `GEMINI_MODEL_TRANSCRIBE = gemini-3.5-transcribe`
-- `DRIVE_FOLDER_NAME = Monev_RTS_DitIE_2026_Audio`
-- `QUEUE_BATCH_SIZE = 3`
-- `MAX_RETRY = 4`
-
-## Alur
-1. Frontend mengambil pertanyaan sekali.
-2. Session dibuat.
-3. User memilih YA/TIDAK.
-4. User merekam.
-5. User menekan Hentikan.
-6. Audio dikirim ke backend.
-7. Backend menyimpan audio asli ke Drive.
-8. Backend meminta Gemini membuat transkripsi Bahasa Indonesia mode smart.
-9. Frontend menerima transkrip dan langsung menampilkannya di bawah audio.
-10. Tombol Simpan & Lanjut aktif.
-11. Backend menyimpan YA/TIDAK + audio + transkrip ke `JAWABAN`.
-12. Soal berikutnya tampil tanpa mengambil pertanyaan dari server lagi.
-13. Pada soal terakhir, `finishSession` memverifikasi seluruh pertanyaan memiliki jawaban dan transkripsi.
-
-## Catatan
-- API key tidak pernah berada di frontend.
-- Jika Gemini gagal setelah audio tersimpan, backend membuat fallback `QUEUE_AI`.
-- Queue worker dapat dipasang dengan `installQueueTrigger()` untuk retry.
-- Jangan mengubah backend Form Satker production.
+Frontend tidak menampilkan label versi pengembangan.

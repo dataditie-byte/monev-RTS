@@ -111,31 +111,24 @@ h2{margin:0 0 14px;font-size:21px}
   .typegrid,.yn{grid-template-columns:1fr}
   .question{font-size:18px}
 }
+
+/* HEADER IDENTITAS RESMI */
+.topbar{background:#fff;border-bottom:5px solid #ffd51f}.brandbar{max-width:1180px;margin:auto;padding:12px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px}.brand-left{display:flex;align-items:center;gap:11px}.brand-bnn{width:58px;height:58px;object-fit:contain}.brand-ananda{width:92px;height:70px;object-fit:contain;justify-self:end}.brand-title{font-size:14px;font-weight:900;color:#073b78;line-height:1.15}.brand-sub{font-size:10px;color:#60778c;margin-top:3px}.brand-war{font-size:clamp(15px,2vw,23px);font-weight:900;color:#0b4a91;text-align:center;white-space:nowrap}.brand-war span{display:block;width:78px;height:3px;background:#ffd51f;border-radius:99px;margin:6px auto 0}.hero{max-width:1180px;margin:auto;display:grid;grid-template-columns:1.05fr 1fr;gap:22px;align-items:center;padding:12px 20px 20px}.hero-copy h1{margin:8px 0 7px;color:#073b78}.hero-copy p{color:#587087;line-height:1.45}.hero-badge{display:inline-block;background:#ffd51f;padding:6px 12px;border-radius:99px;font-size:11px;font-weight:900;color:#073b78}.hero-motto{margin-top:10px;font-weight:900;color:#073b78}.hero-art{height:190px;border-radius:22px;overflow:hidden;background:#fff}.hero-art img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:720px){.brandbar{grid-template-columns:1fr auto;grid-template-areas:"left ananda" "war war";padding:10px 12px}.brand-left{grid-area:left}.brand-ananda{grid-area:ananda;width:76px;height:58px}.brand-war{grid-area:war;padding-top:2px}.brand-bnn{width:50px;height:50px}.brand-title{font-size:11px}.brand-sub{font-size:8px}.hero{grid-template-columns:1fr;padding:10px 12px 15px}.hero-art{height:150px}.hero-copy h1{font-size:27px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand">
-      <img src="assets/logo-bnn.webp" alt="BNN">
-      <div>
-        <div class="title">Monev RTS Dit IE 2026</div>
-        <div class="sub">Direktorat Informasi & Edukasi BNN</div>
-      </div>
-    </div>
-    <div class="badge">FRONTEND V2 FULL</div>
+<header class="topbar">
+  <div class="brandbar">
+    <div class="brand-left"><img src="assets/logo-bnn.webp" alt="Logo BNN" class="brand-bnn"><div><div class="brand-title">BADAN NARKOTIKA NASIONAL</div><div class="brand-sub">Direktorat Informasi &amp; Edukasi</div></div></div>
+    <div class="brand-war">#WarOnDrugsForHumanity<span></span></div>
+    <img src="assets/logo-ananda-bersinar.webp" alt="Ananda Bersinar" class="brand-ananda">
   </div>
-
   <section class="hero">
-    <div class="hero-copy">
-      <h1>Monitoring Program Remaja Teman Sebaya</h1>
-      <p>Pengisian dilakukan oleh personel Dit IE. Setiap jawaban YA/TIDAK disertai penjelasan melalui rekaman suara. Setelah rekaman dihentikan, transkripsi Bahasa Indonesia ditampilkan pada pertanyaan yang sama sebelum dilanjutkan.</p>
-    </div>
-    <div class="hero-art">
-      <img src="assets/header-war-on-drugs-humanity.webp" alt="#WarOnDrugsForHumanity">
-    </div>
+    <div class="hero-copy"><span class="hero-badge">SISTEM MONITORING</span><h1>Remaja Teman Sebaya</h1><p>Pelaksanaan Informasi &amp; Edukasi<br><b>Direktorat Informasi &amp; Edukasi BNN T.A. 2026</b></p><div class="hero-motto">Bersama Kita Cegah Narkoba</div></div>
+    <div class="hero-art"><img src="assets/header-war-on-drugs-humanity.webp" alt="#WarOnDrugsForHumanity"></div>
   </section>
-
+</header>
+<main>
   <section id="identity" class="card">
     <h2>Data Personel</h2>
     <div class="grid">
@@ -213,11 +206,19 @@ h2{margin:0 0 14px;font-size:21px}
     </div>
   </section>
 
-  <div class="footer">Monev RTS Dit IE 2026 · Frontend V2 FULL · Transkripsi setelah rekaman berhenti</div>
+  <div class="footer">Monev RTS Dit IE 2026 · Transkripsi Bahasa Indonesia</div>
 </div>
 
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbyLcNTNZyZUfopI50Fw2HmX8fJPGJPcvS3RsLUxl8geydfHE7yF-a9MeszT_Eynq9Dp/exec';
+const CANONICAL={GURU:["Ada hal yang membuat dirimu tertarik selama program RTS?", "Apakah keseluruhan proses program RTS berjalan lancar sesuai yang diharapkan?", "Ada tantangan atau kendala yang dihadapi selama pelaksanaan RTS?", "Adakah pembelajaran yang dapat petik dari seluruh proses dalam implementasi Program RTS?", "Sudah ada proses perencanaan/RTL dari Program RTS di sekolah ini", "Apakah kegiatan rencana tindak lanjut terlaksana sesuai dengan perencanaan?", "Apakah materi/topik pembelajaran dalam program RTS semua tersampaikan?", "Apakah ada respon yang negatif dari para siswa dalam menerima program RTS?", "Apakah fasilitator mampu menyampaikan materi?", "Apakah pelaksanaan tindak lanjut berjalan dengan lancar?", "Apakah ada tantangan dalam pelaksanaan rencana tindak lanjut sekolah?", "Apakah ada strategi untuk mengatasi tantangan tersebut?", "Apakah ada hal yang dibutuhkan dari BNNK dan BNNP atau lembaga terkait lainnya untuk memperbaiki implementasi ke depan?", "Apakah sekolah melakukan refleksi atas pelaksanaan rencana tindak lanjut tersebut?", "Apakah ada perubahan yang terjadi (di level manapun) setelah sekolah mengimplementasikan Program RTS?", "Apakah ada dukungan lain yang sekolah lakukan untuk perbaikan pelaksanaan rencana tindak lanjut?", "Apakah sekolah berpartisipasi aktif dalam forum komunikasi?", "Apakah ada hal yang perlu ditingkatkan dari implementasi Program RTS saat ini?"],SISWA:["Adakah hal yang membuat dirimu tertarik mengikuti pelatihan RTS?", "Apakah keseluruhan proses pelatihan RTS berjalan sesuai yang kamu harapkan?", "Adakah tantangan atau kendala yang dihadapi selama pelatihan RTS?", "Apakah materi/topik pembelajaran dalam pelatihan RTS semua tersampaikan?", "Apakah kegiatan rencana tindak lanjut terlaksana sesuai dengan perencanaan yang kamu susun?", "Apakah kamu mampu menyampaikan materi pelatihan?", "Apakah ada respon yang negatif dari para siswa dalam menerima program RTS?", "Adakah kesulitan yang kalian hadapi ketika menyampaikan pengetahuan tentang materi pelatihan kepada teman-teman sebaya?", "Apakah pelaksanaan tindak lanjut berjalan dengan lancar?"]};
+function normalizeQuestions(qs,type){
+  const arr=Array.isArray(qs)?qs:[]; const wanted=CANONICAL[type]||[];
+  const valid=arr.length===wanted.length && arr.every((q,i)=>q&&q.question_id===((type==='GURU'?'G':'S')+String(i+1).padStart(2,'0')) && q.pertanyaan && !/^\[VERIFIKASI/i.test(q.pertanyaan));
+  if(valid)return arr;
+  return wanted.map((pertanyaan,i)=>({question_id:(type==='GURU'?'G':'S')+String(i+1).padStart(2,'0'),kelompok:type,no_pertanyaan:i+1,pertanyaan}));
+}
+
 
 const S={
   jenis:'',
@@ -317,7 +318,7 @@ async function startSession(){
       api('createSession',{...d,jenis_responden:S.jenis,kelompok:S.jenis})
     ]);
 
-    S.questions=qr.questions||[];
+    S.questions=normalizeQuestions(qr.questions,S.jenis);
     S.id=sr.id_pengisian||'';
     if(!S.questions.length) throw new Error('Pertanyaan tidak ditemukan untuk jenis responden ini.');
     if(!S.id) throw new Error('ID pengisian tidak diterima server.');
