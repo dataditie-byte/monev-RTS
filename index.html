@@ -228,6 +228,70 @@ audio{width:100%;height:42px;margin-top:2px}
 <div class="footer">Monev RTS Dit IE 2026</div>
 </main>
 
+<script type="module">
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0/+esm";
+
+let localTranscriber = null;
+let localTranscriberPromise = null;
+
+async function getLocalTranscriber() {
+  if (localTranscriber) return localTranscriber;
+  if (localTranscriberPromise) return localTranscriberPromise;
+
+  localTranscriberPromise = (async () => {
+    const opts = navigator.gpu ? { device: "webgpu" } : {};
+    return await pipeline(
+      "automatic-speech-recognition",
+      "onnx-community/whisper-tiny",
+      opts
+    );
+  })();
+
+  try {
+    localTranscriber = await localTranscriberPromise;
+    return localTranscriber;
+  } finally {
+    localTranscriberPromise = null;
+  }
+}
+
+async function blobTo16kMono(blob) {
+  const buffer = await blob.arrayBuffer();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!AC || !Offline) throw new Error("Pemrosesan audio tidak tersedia.");
+
+  const ctx = new AC();
+  try {
+    const decoded = await ctx.decodeAudioData(buffer);
+    const frames = Math.max(1, Math.ceil(decoded.duration * 16000));
+    const offline = new Offline(1, frames, 16000);
+    const source = offline.createBufferSource();
+    source.buffer = decoded;
+    source.connect(offline.destination);
+    source.start(0);
+    const rendered = await offline.startRendering();
+    return rendered.getChannelData(0);
+  } finally {
+    try { await ctx.close(); } catch(e) {}
+  }
+}
+
+async function localWhisperTranscribe(blob) {
+  const transcriber = await getLocalTranscriber();
+  const audio = await blobTo16kMono(blob);
+  const result = await transcriber(audio, {
+    language: "indonesian",
+    task: "transcribe",
+    chunk_length_s: 30,
+    stride_length_s: 5
+  });
+  return String(result?.text || "").trim();
+}
+
+window.localWhisperTranscribe = localWhisperTranscribe;
+</script>
+
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbyLcNTNZyZUfopI50Fw2HmX8fJPGJPcvS3RsLUxl8geydfHE7yF-a9MeszT_Eynq9Dp/exec';
 
@@ -371,7 +435,7 @@ function renderQuestion(){
   $('recordBtn').disabled=!state.selected;
   $('nextBtn').disabled=!a.saved;
   $('saveState').textContent=a.saved?'✓ Tersimpan':'Belum dijawab';
-  $('recStatus').textContent=a.saved?'Jawaban tersimpan.':'Pilih YA/TIDAK, lalu berikan penjelasan melalui suara atau tulisan.';
+  $('recStatus').textContent=a.saved?'Jawaban tersimpan.':'Pilih YA/TIDAK, lalu pilih suara atau tulisan.';
   $('transcriptText').value=state.transcriptFinal||'';
   $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
   show('audioPreview',false);
@@ -448,12 +512,33 @@ async function startRecording(){
       $('recordBtn').disabled=false;$('stopBtn').disabled=true;
       $('recordBox').classList.remove('recording');
       $('timer').textContent=formatTime(state.seconds);
-      // Jangan simpan otomatis. Responden harus memeriksa teks terlebih dahulu.
-      $('recStatus').textContent='Rekaman selesai. Periksa dan koreksi teks, lalu klik Simpan Jawaban.';
-      setNotice('recordNotice', state.transcriptFinal.trim() ? 'info' : 'info',
-        state.transcriptFinal.trim()
-          ? 'Periksa kembali teks sebelum disimpan.'
-          : 'Rekaman tersimpan. Silakan tulis penjelasan pada kotak teks, lalu periksa sebelum disimpan.');
+      // Jangan simpan otomatis. Jika STT browser tidak menghasilkan teks,
+      // gunakan Whisper lokal di perangkat tanpa server/billing.
+      $('recStatus').textContent='Rekaman selesai. Memproses teks...';
+
+      if(state.transcriptFinal.trim()){
+        setNotice('recordNotice','info','Periksa kembali teks sebelum disimpan.');
+      }else{
+        setNotice('recordNotice','info','Memproses suara menjadi teks...');
+        try{
+          const txt=await window.localWhisperTranscribe(state.audioBlob);
+          state.transcriptFinal=(txt||'').trim();
+          $('transcriptText').value=state.transcriptFinal;
+          $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
+          if(state.transcriptFinal){
+            $('recStatus').textContent='Teks siap diperiksa.';
+            setNotice('recordNotice','info','Periksa dan koreksi teks sebelum disimpan.');
+          }else{
+            $('recStatus').textContent='Teks belum tersedia.';
+            setNotice('recordNotice','warn','Silakan tulis penjelasan pada kotak teks sebelum disimpan.');
+          }
+        }catch(err){
+          console.error(err);
+          $('recStatus').textContent='Rekaman selesai.';
+          setNotice('recordNotice','warn','Teks belum dapat dibuat otomatis. Silakan tulis atau gunakan fitur dikte pada keyboard HP.');
+        }
+      }
+
       $('transcriptText').focus();
       updateSaveButton();
     };
@@ -461,14 +546,13 @@ async function startRecording(){
     if(state.recognitionAvailable){
       try{
         startRecognition();
-        $('recStatus').textContent='Merekam... silakan berbicara. Setelah selesai, periksa teks sebelum menyimpan.';
-      }catch(e){
+        $('recStatus').textContent='Merekam... silakan berbicara.';
+      }catch(err){
         state.recognitionAvailable=false;
-        $('recStatus').textContent='Merekam... Setelah selesai, tulis atau koreksi penjelasan pada kotak teks.';
-        setNotice('recordNotice','warn','Rekaman berjalan. Teks dapat diisi atau dikoreksi setelah rekaman selesai.');
+        $('recStatus').textContent='Merekam... silakan berbicara.';
       }
     }else{
-      $('recStatus').textContent='Merekam... Setelah selesai, tulis penjelasan pada kotak teks.';
+      $('recStatus').textContent='Merekam... silakan berbicara.';
     }
     $('recordBtn').disabled=true;$('stopBtn').disabled=false;
     $('recordBox').classList.add('recording');
