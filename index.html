@@ -140,11 +140,11 @@ audio{width:100%;height:42px;margin-top:2px}
 
   <h3 class="section-title" style="margin-top:22px">Jenis Responden</h3>
   <div class="role-grid">
-    <button class="role" data-role="GURU">
+    <button type="button" class="role" data-role="GURU">
       <div class="num">18 pertanyaan</div><h3>Guru Pendamping RTS</h3>
       <p>Monitoring pelaksanaan, tindak lanjut, dukungan sekolah, refleksi, dan kebutuhan penguatan program.</p>
     </button>
-    <button class="role" data-role="SISWA">
+    <button type="button" class="role" data-role="SISWA">
       <div class="num">9 pertanyaan</div><h3>Siswa / Fasilitator RTS</h3>
       <p>Pengalaman pelatihan, penyampaian materi, tantangan, tindak lanjut, dan pengalaman sebagai fasilitator sebaya.</p>
     </button>
@@ -152,7 +152,7 @@ audio{width:100%;height:42px;margin-top:2px}
 
   <div class="actions">
     <div style="font-size:12px;color:#64748b">Nomor pengisian akan dibuat otomatis setelah mulai.</div>
-    <button id="startBtn" class="btn btn-primary" disabled>Mulai Pengisian →</button>
+    <button id="startBtn" class="btn btn-primary">Mulai Pengisian →</button>
   </div>
 
   <div class="resume">
@@ -290,7 +290,9 @@ function validateIdentity(){
   return ['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah'].every(k=>d[k]);
 }
 function updateStart(){
-  $('startBtn').disabled=!(validateIdentity()&&state.role);
+  // Tombol Mulai selalu aktif agar autofill/browser tidak membuat tombol terkunci.
+  // Validasi dilakukan saat tombol ditekan dan field yang kurang akan ditunjukkan.
+  $('startBtn').disabled=false;
 }
 fields.forEach(k=>$(k).addEventListener('input',updateStart));
 
@@ -315,7 +317,21 @@ document.querySelectorAll('.role').forEach(b=>{
 });
 
 $('startBtn').onclick=async()=>{
-  if(!validateIdentity()||!state.role) return;
+  if(!state.role){
+    setNotice('browserNotice','warn','Pilih terlebih dahulu jenis responden: Guru Pendamping RTS atau Siswa/Fasilitator RTS.');
+    document.querySelector('.role-grid').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  const d=selectedData();
+  const required=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah'];
+  const missing=required.filter(k=>!d[k]);
+  if(missing.length){
+    const labels={nama_personel:'Nama Personel',nip:'NIP',jabatan:'Jabatan',unit_satker:'Unit / Satker',provinsi:'Provinsi',kabupaten_kota:'Kabupaten / Kota',sekolah:'Sekolah'};
+    setNotice('browserNotice','warn','Lengkapi data wajib: <b>'+missing.map(k=>labels[k]).join(', ')+'</b>.');
+    const first=$(missing[0]);
+    first.focus(); first.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   $('startBtn').disabled=true;
   try{
     const r=await api('createSession',{...selectedData(),jenis_responden:state.role});
