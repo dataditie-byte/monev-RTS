@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Monev RTS Dit IE 2026</title>
+<style>
+:root{
+  --navy:#123f78; --navy2:#0b3262; --red:#c5162e; --yellow:#f6c500;
+  --green:#138a45; --text:#1e293b; --muted:#64748b; --line:#dce3eb;
+  --bg:#f4f6f8; --card:#fff; --soft:#f8fafc; --shadow:0 8px 28px rgba(15,35,60,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.container{width:min(1280px,calc(100% - 28px));margin:auto}
+.topbar{background:#fff;border-bottom:4px solid var(--yellow);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.brand{min-height:92px;display:flex;align-items:center;gap:20px;padding:10px 0}
+.logo-bnn{width:74px;height:74px;object-fit:contain;flex:0 0 auto}
+.brand-title{min-width:0;flex:1}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--red);margin-bottom:3px}
+.brand-title h1{margin:0;color:var(--navy);font-size:24px;line-height:1.1}
+.brand-title p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.hashtag{font-size:14px;font-weight:900;color:var(--navy);white-space:nowrap}
+.hashtag:after{content:"";display:block;width:56px;height:4px;background:var(--yellow);margin-top:8px}
+.logo-ananda{width:82px;height:68px;object-fit:contain;flex:0 0 auto}
+.header-art{width:180px;height:68px;object-fit:contain;border-radius:12px}
+.page{padding:18px 0 40px}
+.card{background:var(--card);border:1px solid #e5eaf0;border-radius:18px;box-shadow:var(--shadow);padding:22px}
+.intro{display:flex;align-items:center;gap:18px;margin-bottom:16px}
+.intro-art{width:210px;height:84px;object-fit:contain;flex:0 0 auto}
+.intro h2{margin:0 0 6px;color:var(--navy);font-size:21px}
+.intro p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.section-title{font-size:18px;font-weight:800;margin:0 0 16px;color:#26364a}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:800;color:#334155}
+input,select{width:100%;height:44px;border:1px solid #cfd8e3;border-radius:10px;background:#fff;padding:0 13px;outline:none;color:var(--text)}
+input:focus,select:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(18,63,120,.08)}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}
+.btn{border:0;border-radius:11px;padding:12px 18px;font-weight:800}
+.btn-primary{background:var(--navy);color:#fff}.btn-primary:hover{background:var(--navy2)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{filter:brightness(.95)}
+.btn-light{background:#eef2f6;color:#334155}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.resume{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.resume-row{display:flex;gap:10px}.resume-row input{flex:1}
+.role-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.role{border:1px solid #d8e0e9;border-radius:15px;background:#fff;padding:18px;text-align:left;transition:.15s}
+.role:hover{border-color:var(--navy);transform:translateY(-1px)}
+.role.active{border:2px solid var(--navy);background:#f4f8fd}
+.role .num{font-size:11px;font-weight:800;color:var(--red);text-transform:uppercase}
+.role h3{margin:7px 0 4px;color:var(--navy);font-size:17px}
+.role p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.hidden{display:none!important}
+.progress-wrap{position:sticky;top:0;z-index:10;background:rgba(244,246,248,.96);backdrop-filter:blur(7px);padding:8px 0}
+.progress-head{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px}
+.progress{height:7px;background:#e5eaf0;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:var(--red);width:0}
+.question-card{padding:24px}
+.q-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;font-weight:700}
+.question{font-size:25px;line-height:1.32;color:#17263a;margin:18px 0 20px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{height:58px;border:1px solid #d5dee8;border-radius:13px;background:#fff;font-size:16px;font-weight:900}
+.choice.yes.active{border-color:#159447;background:#edf9f1;color:#087538}
+.choice.no.active{border-color:var(--red);background:#fff0f2;color:#a51024}
+.record-box{margin-top:22px;border:1px solid #d9e2ec;border-radius:18px;background:#f8fafc;padding:22px}
+.rec-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rec-title{font-weight:900;font-size:17px}.status{font-size:13px;font-weight:700;color:var(--muted);margin-top:4px}.mode-tabs{display:flex;gap:8px;margin:18px 0 14px}.mode-btn{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:11px;padding:11px 17px;font-weight:800;cursor:pointer}.mode-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}.editor-label{font-size:12px;font-weight:900;letter-spacing:.05em;color:#64748b;margin:14px 0 7px;text-transform:uppercase}.transcript-edit,.typed-answer{display:block;width:100%;min-height:150px;box-sizing:border-box;border:1px solid #b9c7d6;border-radius:12px;background:#fff;padding:15px;font:500 16px/1.6 system-ui,sans-serif;resize:vertical;color:#17263a;outline:none}.transcript-edit:focus,.typed-answer:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(18,61,116,.10)}.save-answer-btn{margin-top:12px;min-height:46px;padding:12px 20px;font-size:14px}.review-note{background:#eef5ff;color:#214b80;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;margin-top:10px}.record-actions{display:flex;gap:10px;flex-wrap:wrap}
+.rec-actions{display:flex;gap:9px;margin-top:12px}
+.rec-btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800}
+.rec-start{background:var(--red);color:#fff}.rec-stop{background:#e8edf2;color:#334155}
+.rec-stop:disabled{opacity:.45}
+.timer{font-variant-numeric:tabular-nums;font-weight:900;color:var(--navy);font-size:15px}
+.wave{height:8px;background:#e2e8f0;border-radius:99px;margin:12px 0;overflow:hidden}
+.wave i{display:block;width:0;height:100%;background:var(--red);animation:none}
+.recording .wave i{width:100%;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+audio{width:100%;height:42px;margin-top:2px}
+.transcript{margin-top:13px;background:#fff;border-left:4px solid var(--navy);border-radius:10px;padding:13px}
+.transcript small{display:block;color:var(--red);font-size:10px;font-weight:900;letter-spacing:.12em;margin-bottom:7px}
+.transcript p{margin:0;line-height:1.55;font-size:14px;white-space:pre-wrap}
+.transcript.interim{border-left-color:#94a3b8}.transcript.empty p{color:#94a3b8}
+.notice{margin-top:12px;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.45}
+.notice.info{background:#eef5ff;color:#214b80}.notice.warn{background:#fff7df;color:#7b5b00}.notice.error{background:#fff0f2;color:#9d1730}.notice.ok{background:#edf9f1;color:#0d6f37}
+.footer{text-align:center;color:#8793a2;font-size:11px;margin-top:18px}
+.loading{display:inline-flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:var(--navy);animation:b 1s infinite}.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}@keyframes b{0%,100%{opacity:.25}50%{opacity:1}}
+@media(max-width:900px){.hashtag{display:none}.header-art{display:none}.brand{min-height:76px}.logo-bnn{width:60px;height:60px}.logo-ananda{width:72px}.brand-title h1{font-size:20px}}
+@media(max-width:680px){
+ .container{width:min(100% - 18px,1280px)} .card{padding:16px;border-radius:15px}
+ .brand{gap:10px}.brand-title p{font-size:10px}.brand-title h1{font-size:17px}.logo-bnn{width:52px;height:52px}.logo-ananda{width:62px;height:55px}
+ .grid,.role-grid,.choices{grid-template-columns:1fr}
+ .intro{align-items:flex-start}.intro-art{width:125px;height:60px}
+ .question-card{padding:16px}.question{font-size:20px;margin:14px 0}.record-box{padding:16px}.transcript-edit,.typed-answer{min-height:180px;font-size:16px}.mode-tabs{flex-wrap:wrap}.mode-btn{flex:1}
+ .choice{height:52px}.actions{flex-direction:column-reverse;align-items:stretch}.actions .btn{width:100%}
+ .resume-row{flex-direction:column}.resume-row .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="container brand">
+    <img class="logo-bnn" src="assets/logo-bnn.webp" alt="Badan Narkotika Nasional">
+    <div class="brand-title">
+      <div class="kicker">DIREKTORAT INFORMASI &amp; EDUKASI</div>
+      <h1>Monev Remaja Teman Sebaya</h1>
+      <p>Monitoring Pelaksanaan Program RTS • Dit IE BNN T.A. 2026</p>
+    </div>
+    <div class="hashtag">#WarOnDrugsForHumanity</div>
+    <img class="logo-ananda" src="assets/logo-ananda-bersinar.webp" alt="Ananda Bersinar">
+    <img class="header-art" src="assets/header-war-on-drugs-humanity.webp" alt="War on Drugs for Humanity">
+  </div>
+</header>
+
+<main class="container page">
+<section id="startView" class="card">
+  <div class="intro">
+    <img class="intro-art" src="assets/header-war-on-drugs-humanity.webp" alt="">
+    <div>
+      <h2>Pengisian Monev RTS</h2>
+      <p>Pengisian dilakukan oleh personel Dit IE. Setiap jawaban terdiri dari pilihan <b>YA/TIDAK</b> dan penjelasan. Penjelasan dapat disampaikan melalui suara atau ditulis.</p>
+    </div>
+  </div>
+
+  <h3 class="section-title">Data Personel</h3>
+  <div class="grid">
+    <div class="field"><label>Nama Personel *</label><input id="nama_personel" autocomplete="name"></div>
+    <div class="field"><label>NIP *</label><input id="nip" inputmode="numeric"></div>
+    <div class="field"><label>Jabatan *</label><input id="jabatan"></div>
+    <div class="field"><label>Unit / Satker *</label><input id="unit_satker"></div>
+    <div class="field"><label>Provinsi *</label><input id="provinsi"></div>
+    <div class="field"><label>Kabupaten / Kota *</label><input id="kabupaten_kota"></div>
+    <div class="field full"><label>Sekolah *</label><input id="sekolah"></div>
+    <div class="field full"><label>Nama Responden RTS <span style="font-weight:400;color:#94a3b8">(opsional)</span></label><input id="nama_responden"></div>
+  </div>
+
+
+  <h3 class="section-title" style="margin-top:22px">Jenis Responden</h3>
+  <div class="role-grid">
+    <button type="button" class="role" data-role="GURU">
+      <div class="num">18 pertanyaan</div><h3>Guru Pendamping RTS</h3>
+      <p>Monitoring pelaksanaan, tindak lanjut, dukungan sekolah, refleksi, dan kebutuhan penguatan program.</p>
+    </button>
+    <button type="button" class="role" data-role="SISWA">
+      <div class="num">9 pertanyaan</div><h3>Siswa / Fasilitator RTS</h3>
+      <p>Pengalaman pelatihan, penyampaian materi, tantangan, tindak lanjut, dan pengalaman sebagai fasilitator sebaya.</p>
+    </button>
+  </div>
+
+  <div class="actions">
+    <div style="font-size:12px;color:#64748b">Nomor pengisian akan dibuat otomatis setelah mulai.</div>
+    <button id="startBtn" class="btn btn-primary">Mulai Pengisian →</button>
+  </div>
+
+  <div class="resume">
+    <div style="font-weight:800;font-size:13px;margin-bottom:7px">Lanjutkan pengisian sebelumnya</div>
+    <div class="resume-row">
+      <input id="resumeId" placeholder="Contoh: RTS-20260923-103000-ABC123">
+      <button id="resumeBtn" class="btn btn-light">Lanjutkan</button>
+    </div>
+    <div id="resumeMsg"></div>
+  </div>
+</section>
+
+<section id="questionView" class="hidden">
+  <div class="progress-wrap">
+    <div class="progress-head"><span id="progressLabel">Pertanyaan 1 dari 18</span><span id="sessionLabel"></span></div>
+    <div class="progress"><i id="progressBar"></i></div>
+  </div>
+
+  <div class="card question-card">
+    <div class="q-meta"><span id="roleLabel"></span><span id="saveState">Belum dijawab</span></div>
+    <div id="questionText" class="question"></div>
+    <div class="choices">
+      <button id="yesBtn" class="choice yes">YA</button>
+      <button id="noBtn" class="choice no">TIDAK</button>
+    </div>
+
+    <div id="recordBox" class="record-box">
+      <div class="rec-head">
+        <div>
+          <div class="rec-title">Penjelasan jawaban</div>
+          <div id="recStatus" class="status">Pilih YA/TIDAK, lalu pilih cara memberikan penjelasan.</div>
+        </div>
+        <div id="timer" class="timer">00:00</div>
+      </div>
+      <div class="mode-tabs">
+        <button id="voiceModeBtn" class="mode-btn active">🎙 Suara</button>
+        <button id="textModeBtn" class="mode-btn">⌨ Tulis Jawaban</button>
+      </div>
+      <div id="voicePanel">
+        <div class="record-actions">
+          <button id="recordBtn" class="rec-btn rec-start" disabled>🎙 Mulai Rekam</button>
+          <button id="stopBtn" class="rec-btn rec-stop" disabled>■ Hentikan</button>
+        </div>
+        <div class="wave"><i></i></div>
+        <audio id="audioPreview" controls class="hidden"></audio>
+      </div>
+      <div id="textPanel" class="hidden"></div>
+      <div id="transcriptBox" class="transcript">
+        <div class="editor-label">Teks penjelasan</div>
+        <div id="reviewNote" class="review-note">Untuk suara: setelah berhenti merekam, periksa dan koreksi teks di bawah ini. Setelah benar, klik <b>Simpan Jawaban</b>. Untuk tulisan: langsung ketik di kotak ini.</div>
+        <textarea id="transcriptText" class="transcript-edit" placeholder="Tulis penjelasan Anda di sini. Jika menggunakan suara, hasil transkripsi akan muncul di kotak ini untuk diperiksa terlebih dahulu."></textarea>
+        <button id="saveAnswerBtn" class="btn btn-primary save-answer-btn" disabled>✓ Simpan Jawaban</button>
+      </div>
+      <div id="recordNotice"></div>
+    </div>
+
+    <div class="actions">
+      <button id="prevBtn" class="btn btn-light">← Sebelumnya</button>
+      <button id="nextBtn" class="btn btn-primary" disabled>Simpan &amp; Lanjut →</button>
+    </div>
+  </div>
+</section>
+
+<section id="doneView" class="card hidden">
+  <div style="text-align:center;padding:18px 8px">
+    <div style="font-size:48px">✓</div>
+    <h2 style="color:var(--green);margin:8px 0">Pengisian Selesai</h2>
+    <p style="color:#64748b">Seluruh jawaban, transkripsi, dan rekaman suara telah tersimpan.</p>
+    <div id="doneId" style="display:inline-block;background:#f1f5f9;border-radius:9px;padding:10px 14px;font-weight:900;color:var(--navy)"></div>
+    <div style="margin-top:18px"><button class="btn btn-primary" onclick="location.reload()">Pengisian Baru</button></div>
+  </div>
+</section>
+
+<div class="footer">Monev RTS Dit IE 2026</div>
+</main>
+
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbyLcNTNZyZUfopI50Fw2HmX8fJPGJPcvS3RsLUxl8geydfHE7yF-a9MeszT_Eynq9Dp/exec';
+
+const QUESTIONS={
+GURU:[
+'Ada hal yang membuat dirimu tertarik selama program RTS?',
+'Apakah keseluruhan proses program RTS berjalan lancar sesuai yang diharapkan?',
+'Ada tantangan atau kendala yang dihadapi selama pelaksanaan RTS?',
+'Adakah pembelajaran yang dapat petik dari seluruh proses dalam implementasi Program RTS?',
+'Sudah ada proses perencanaan/RTL dari Program RTS di sekolah ini',
+'Apakah kegiatan rencana tindak lanjut terlaksana sesuai dengan perencanaan?',
+'Apakah materi/topik pembelajaran dalam program RTS semua tersampaikan?',
+'Apakah ada respon yang negatif dari para siswa dalam menerima program RTS?',
+'Apakah fasilitator mampu menyampaikan materi?',
+'Apakah pelaksanaan tindak lanjut berjalan dengan lancar?',
+'Apakah ada tantangan dalam pelaksanaan rencana tindak lanjut sekolah?',
+'Apakah ada strategi untuk mengatasi tantangan tersebut?',
+'Apakah ada hal yang dibutuhkan dari BNNK dan BNNP atau lembaga terkait lainnya untuk memperbaiki implementasi ke depan?',
+'Apakah sekolah melakukan refleksi atas pelaksanaan rencana tindak lanjut tersebut?',
+'Apakah ada perubahan yang terjadi (di level manapun) setelah sekolah mengimplementasikan Program RTS?',
+'Apakah ada dukungan lain yang sekolah lakukan untuk perbaikan pelaksanaan rencana tindak lanjut?',
+'Apakah sekolah berpartisipasi aktif dalam forum komunikasi?',
+'Apakah ada hal yang perlu ditingkatkan dari implementasi Program RTS saat ini?'
+],
+SISWA:[
+'Adakah hal yang membuat dirimu tertarik mengikuti pelatihan RTS?',
+'Apakah keseluruhan proses pelatihan RTS berjalan sesuai yang kamu harapkan?',
+'Adakah tantangan atau kendala yang dihadapi selama pelatihan RTS?',
+'Apakah materi/topik pembelajaran dalam pelatihan RTS semua tersampaikan?',
+'Apakah kegiatan rencana tindak lanjut terlaksana sesuai dengan perencanaan yang kamu susun?',
+'Apakah kamu mampu menyampaikan materi pelatihan?',
+'Apakah ada respon yang negatif dari para siswa dalam menerima program RTS?',
+'Adakah kesulitan yang kalian hadapi ketika menyampaikan pengetahuan tentang materi pelatihan kepada teman-teman sebaya?',
+'Apakah pelaksanaan tindak lanjut berjalan dengan lancar?'
+]};
+
+let state={
+  role:'',questions:[],index:0,sessionId:'',
+  answers:{}, selected:'', transcriptFinal:'', transcriptInterim:'',
+  mediaRecorder:null,chunks:[],audioBlob:null,audioUrl:'',
+  recognition:null, recording:false, manualStop:false, recognitionAvailable:false,
+  timer:null, seconds:0, saving:false, inputMode:'VOICE'
+};
+
+const $=id=>document.getElementById(id);
+const fields=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah','nama_responden'];
+
+function api(action,payload={}){
+  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload})})
+    .then(r=>r.json());
+}
+function show(id,on=true){$(id).classList.toggle('hidden',!on)}
+function setNotice(el,type,text){$(el).innerHTML=text?`<div class="notice ${type}">${text}</div>`:''}
+function selectedData(){
+  const o={}; fields.forEach(k=>o[k]=$(k).value.trim()); return o;
+}
+function validateIdentity(){
+  const d=selectedData();
+  return ['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah'].every(k=>d[k]);
+}
+function updateStart(){
+  // Tombol Mulai selalu aktif agar autofill/browser tidak membuat tombol terkunci.
+  // Validasi dilakukan saat tombol ditekan dan field yang kurang akan ditunjukkan.
+  $('startBtn').disabled=false;
+}
+fields.forEach(k=>$(k).addEventListener('input',updateStart));
+
+function setupSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  state.recognitionAvailable=!!SR;
+  updateStart();
+}
+setupSpeech();
+
+document.querySelectorAll('.role').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.role').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.role=b.dataset.role; updateStart();
+  });
+});
+
+$('startBtn').onclick=async()=>{
+  if(!state.role){
+    setNotice('browserNotice','warn','Pilih terlebih dahulu jenis responden: Guru Pendamping RTS atau Siswa/Fasilitator RTS.');
+    document.querySelector('.role-grid').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  const d=selectedData();
+  const required=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah'];
+  const missing=required.filter(k=>!d[k]);
+  if(missing.length){
+    const labels={nama_personel:'Nama Personel',nip:'NIP',jabatan:'Jabatan',unit_satker:'Unit / Satker',provinsi:'Provinsi',kabupaten_kota:'Kabupaten / Kota',sekolah:'Sekolah'};
+    setNotice('browserNotice','warn','Lengkapi data wajib: <b>'+missing.map(k=>labels[k]).join(', ')+'</b>.');
+    const first=$(missing[0]);
+    first.focus(); first.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  $('startBtn').disabled=true;
+  try{
+    const r=await api('createSession',{...selectedData(),jenis_responden:state.role});
+    if(!r.ok) throw new Error(r.error||'Gagal membuat sesi.');
+    state.sessionId=r.id_pengisian;
+    localStorage.setItem('monev_rts_session',state.sessionId);
+    state.questions=QUESTIONS[state.role].map((q,i)=>({question_id:(state.role==='GURU'?'G':'S')+String(i+1).padStart(2,'0'),no_pertanyaan:i+1,kelompok:state.role,pertanyaan:q}));
+    state.index=0; state.answers={};
+    show('startView',false); show('questionView',true); show('doneView',false);
+    renderQuestion();
+  }catch(e){setNotice('browserNotice','error',e.message);$('startBtn').disabled=false}
+};
+
+$('resumeBtn').onclick=async()=>{
+  const id=$('resumeId').value.trim();
+  if(!id) return setNotice('resumeMsg','warn','Masukkan nomor pengisian.');
+  setNotice('resumeMsg','info','Mencari pengisian...');
+  try{
+    const r=await api('resumeSession',{id_pengisian:id});
+    if(!r.ok) throw new Error(r.error||'Pengisian tidak ditemukan.');
+    const s=r.session; state.sessionId=id; state.role=s.jenis_responden;
+    fields.forEach(k=>$(k).value=s[k]||'');
+    const pr=await api('getProgress',{id_pengisian:id});
+    const n=pr.ok?Number(pr.terjawab||0):0;
+    state.questions=QUESTIONS[state.role].map((q,i)=>({question_id:(state.role==='GURU'?'G':'S')+String(i+1).padStart(2,'0'),no_pertanyaan:i+1,kelompok:state.role,pertanyaan:q}));
+    state.index=Math.min(n,state.questions.length-1);
+    localStorage.setItem('monev_rts_session',id);
+    show('startView',false);show('questionView',true);show('doneView',false);renderQuestion();
+  }catch(e){setNotice('resumeMsg','error',e.message)}
+};
+
+function renderQuestion(){
+  stopEverything();
+  const q=state.questions[state.index];
+  $('progressLabel').textContent=`Pertanyaan ${state.index+1} dari ${state.questions.length}`;
+  $('progressBar').style.width=((state.index+1)/state.questions.length*100)+'%';
+  $('sessionLabel').textContent=state.sessionId;
+  $('roleLabel').textContent=state.role==='GURU'?'GURU PENDAMPING RTS':'SISWA / FASILITATOR RTS';
+  $('questionText').textContent=q.pertanyaan;
+  const a=state.answers[q.question_id]||{};
+  state.selected=a.answer||'';state.transcriptFinal=a.transcript||'';state.transcriptInterim=''; state.inputMode=a.inputMode||'VOICE';
+  $('yesBtn').classList.toggle('active',state.selected==='YA');
+  $('noBtn').classList.toggle('active',state.selected==='TIDAK');
+  $('recordBtn').disabled=!state.selected;
+  $('nextBtn').disabled=!a.saved;
+  $('saveState').textContent=a.saved?'✓ Tersimpan':'Belum dijawab';
+  $('recStatus').textContent=a.saved?'Jawaban tersimpan.':'Pilih YA/TIDAK, lalu berikan penjelasan melalui suara atau tulisan.';
+  $('transcriptText').value=state.transcriptFinal||'';
+  $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
+  show('audioPreview',false);
+  if(a.audioUrl){$('audioPreview').src=a.audioUrl;show('audioPreview',true)}
+  setNotice('recordNotice','', '');
+  $('timer').textContent='00:00'; setInputMode(state.inputMode||'VOICE'); updateSaveButton(); 
+}
+function chooseAnswer(v){
+  if(state.recording) return;
+  state.selected=v;
+  const q=state.questions[state.index];
+  state.answers[q.question_id]=state.answers[q.question_id]||{};
+  state.answers[q.question_id].answer=v;
+  $('yesBtn').classList.toggle('active',v==='YA');$('noBtn').classList.toggle('active',v==='TIDAK');
+  $('recordBtn').disabled=false;$('nextBtn').disabled=true;
+  $('recStatus').textContent='Siap merekam penjelasan.';
+}
+$('yesBtn').onclick=()=>chooseAnswer('YA');
+$('noBtn').onclick=()=>chooseAnswer('TIDAK');
+
+function supportedMime(){
+  const list=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+  return list.find(x=>window.MediaRecorder&&MediaRecorder.isTypeSupported(x))||'';
+}
+function startRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) throw new Error('Browser tidak mendukung transkripsi suara.');
+  const rec=new SR();
+  rec.lang='id-ID';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const text=e.results[i][0].transcript.trim();
+      if(e.results[i].isFinal && text) state.transcriptFinal+=(state.transcriptFinal?' ':'')+text;
+      else interim+=(interim?' ':'')+text;
+    }
+    state.transcriptInterim=interim;
+    $('transcriptText').value=(state.transcriptFinal+' '+interim).trim()||'Mendengarkan...';
+    $('transcriptBox').classList.remove('empty');
+  };
+  rec.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      setNotice('recordNotice','error','Izin mikrofon/pengenalan suara ditolak. Izinkan mikrofon pada browser lalu coba lagi.');
+    }else if(e.error!=='aborted'){
+      setNotice('recordNotice','warn','Pengenalan suara sempat terhenti. Sistem akan mencoba melanjutkan selama perekaman masih aktif.');
+    }
+  };
+  rec.onend=()=>{
+    if(state.recording&&!state.manualStop){
+      setTimeout(()=>{if(state.recording&&!state.manualStop) try{startRecognition()}catch(e){}},180);
+    }
+  };
+  state.recognition=rec;rec.start();
+}
+async function startRecording(){
+  if(!state.selected||state.recording) return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+    return setNotice('recordNotice','error','Browser ini tidak mendukung perekaman suara. Gunakan Google Chrome.');
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const mime=supportedMime();
+    state.chunks=[];state.audioBlob=null;state.audioUrl='';state.manualStop=false;state.recording=true;state.seconds=0;
+    state.transcriptFinal='';state.transcriptInterim='';$('transcriptText').value='';$('transcriptBox').classList.add('empty');updateSaveButton();
+    state.mediaRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+    state.mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)state.chunks.push(e.data)};
+    state.mediaRecorder.onstop=async()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      state.audioBlob=new Blob(state.chunks,{type:state.mediaRecorder.mimeType||mime||'audio/webm'});
+      state.audioUrl=URL.createObjectURL(state.audioBlob);
+      $('audioPreview').src=state.audioUrl;show('audioPreview',true);
+      state.recording=false;
+      clearInterval(state.timer);state.timer=null;
+      $('recordBtn').disabled=false;$('stopBtn').disabled=true;
+      $('recordBox').classList.remove('recording');
+      $('timer').textContent=formatTime(state.seconds);
+      // Jangan simpan otomatis. Responden harus memeriksa teks terlebih dahulu.
+      $('recStatus').textContent='Rekaman selesai. Periksa dan koreksi teks, lalu klik Simpan Jawaban.';
+      setNotice('recordNotice', state.transcriptFinal.trim() ? 'info' : 'info',
+        state.transcriptFinal.trim()
+          ? 'Periksa kembali teks sebelum disimpan.'
+          : 'Rekaman tersimpan. Silakan tulis penjelasan pada kotak teks, lalu periksa sebelum disimpan.');
+      $('transcriptText').focus();
+      updateSaveButton();
+    };
+    state.mediaRecorder.start(250);
+    if(state.recognitionAvailable){
+      try{
+        startRecognition();
+        $('recStatus').textContent='Merekam... silakan berbicara. Setelah selesai, periksa teks sebelum menyimpan.';
+      }catch(e){
+        state.recognitionAvailable=false;
+        $('recStatus').textContent='Merekam... Setelah selesai, tulis atau koreksi penjelasan pada kotak teks.';
+        setNotice('recordNotice','warn','Rekaman berjalan. Teks dapat diisi atau dikoreksi setelah rekaman selesai.');
+      }
+    }else{
+      $('recStatus').textContent='Merekam... Setelah selesai, tulis penjelasan pada kotak teks.';
+    }
+    $('recordBtn').disabled=true;$('stopBtn').disabled=false;
+    $('recordBox').classList.add('recording');
+    state.timer=setInterval(()=>{$('timer').textContent=formatTime(++state.seconds)},1000);
+  }catch(e){
+    state.recording=false;
+    setNotice('recordNotice','error',e.message||'Mikrofon tidak dapat digunakan.');
+  }
+}
+function stopRecording(){
+  if(!state.recording) return;
+  state.manualStop=true;
+  if(state.recognition){try{state.recognition.stop()}catch(e){}}
+  $('recStatus').textContent='Mengakhiri rekaman...';
+  if(state.mediaRecorder&&state.mediaRecorder.state!=='inactive') state.mediaRecorder.stop();
+}
+function stopEverything(){
+  if(state.recording){state.manualStop=true;try{state.recognition&&state.recognition.stop()}catch(e){}try{state.mediaRecorder&&state.mediaRecorder.stop()}catch(e){}}
+  clearInterval(state.timer);state.timer=null;
+}
+function formatTime(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
+$('recordBtn').onclick=startRecording;
+$('stopBtn').onclick=stopRecording;
+function setInputMode(mode){
+  if(state.recording)return;
+  state.inputMode=mode;
+  $('voiceModeBtn').classList.toggle('active',mode==='VOICE');
+  $('textModeBtn').classList.toggle('active',mode==='TEXT');
+  show('voicePanel',mode==='VOICE');
+  show('textPanel',false);
+  $('recStatus').textContent=mode==='VOICE' ? 'Pilih Mulai Rekam. Setelah selesai, periksa teks sebelum menyimpan.' : 'Ketik penjelasan pada kotak teks, periksa kembali, lalu simpan.';
+  if(mode==='TEXT') $('transcriptText').focus();
+  updateSaveButton();
+}
+$('voiceModeBtn').onclick=()=>setInputMode('VOICE');
+$('textModeBtn').onclick=()=>setInputMode('TEXT');
+function updateSaveButton(){
+  const text=$('transcriptText').value.trim();
+  $('saveAnswerBtn').disabled=!(state.selected&&text&&!state.recording&&!state.saving);
+}
+$('transcriptText').oninput=()=>{
+  state.transcriptFinal=$('transcriptText').value.trim();
+  $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
+  updateSaveButton();
+};
+$('saveAnswerBtn').onclick=()=>saveCurrentAnswer(state.inputMode==='VOICE' && state.audioBlob ? 'SUARA' : 'TEKS');
+
+async function saveCurrentAnswer(mode){
+  const q=state.questions[state.index];
+  const answer=state.answers[q.question_id]||{};
+  const text=(state.transcriptFinal||'').trim();
+  if(!state.selected||!text) return;
+  state.saving=true;$('saveState').textContent='Menyimpan...';$('nextBtn').disabled=true;$('recordBtn').disabled=true;$('saveAnswerBtn').disabled=true;
+  setNotice('recordNotice','info','<span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span> Menyimpan jawaban...');
+  try{
+    let payload={id_pengisian:state.sessionId,question_id:q.question_id,no_pertanyaan:q.no_pertanyaan,kelompok:state.role,jawaban_ya_tidak:state.selected,transkripsi:text,jenis_jawaban:mode||'TEKS'};
+    if(mode==='SUARA' && state.audioBlob){ payload.base64_audio=await blobToBase64(state.audioBlob); payload.mime_type=state.audioBlob.type||'audio/webm'; }
+    const r=await api('saveAnswer',payload);
+    if(!r.ok) throw new Error(r.error||'Gagal menyimpan jawaban.');
+    state.answers[q.question_id]={answer:state.selected,transcript:text,saved:true,audioUrl:state.audioUrl,inputMode:mode||'TEKS'};
+    $('saveState').textContent='✓ Tersimpan';$('nextBtn').disabled=false;
+    $('recStatus').textContent='Jawaban tersimpan.';
+    setNotice('recordNotice','ok','✓ Jawaban tersimpan. Silakan lanjut ke pertanyaan berikutnya.');
+  }catch(e){
+    $('saveState').textContent='Belum tersimpan';
+    setNotice('recordNotice','error',e.message||'Gagal menyimpan jawaban.');
+  }finally{state.saving=false;$('recordBtn').disabled=!state.selected;updateSaveButton()}
+}
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=reject;r.readAsDataURL(blob);
+  });
+}
+$('prevBtn').onclick=()=>{
+  if(state.index<=0)return;
+  if(state.recording)return;
+  state.index--;renderQuestion();
+};
+$('nextBtn').onclick=async()=>{
+  if(state.saving||state.recording)return;
+  const q=state.questions[state.index],a=state.answers[q.question_id];
+  if(!a||!a.saved)return;
+  if(state.index<state.questions.length-1){state.index++;renderQuestion();return;}
+  $('nextBtn').disabled=true;$('prevBtn').disabled=true;$('saveState').textContent='Menyelesaikan...';
+  try{
+    const r=await api('finishSession',{id_pengisian:state.sessionId});
+    if(!r.ok) throw new Error(r.error||'Pengisian belum lengkap.');
+    $('doneId').textContent=state.sessionId;show('questionView',false);show('doneView',true);
+    localStorage.removeItem('monev_rts_session');
+  }catch(e){
+    $('nextBtn').disabled=false;$('prevBtn').disabled=false;
+    setNotice('recordNotice','error',e.message||'Gagal menyelesaikan pengisian.');
+  }
+};
+</script>
+</body>
+</html>
