@@ -132,8 +132,9 @@ audio{width:100%;height:42px;margin-top:2px}
     <div class="field"><label>Unit / Satker *</label><input id="unit_satker"></div>
     <div class="field"><label>Provinsi *</label><input id="provinsi"></div>
     <div class="field"><label>Kabupaten / Kota *</label><input id="kabupaten_kota"></div>
-    <div class="field full"><label>Sekolah *</label><input id="sekolah"></div>
-    <div class="field full"><label>Nama Responden RTS <span style="font-weight:400;color:#94a3b8">(opsional)</span></label><input id="nama_responden"></div>
+    <div class="field"><label>Nama Sekolah *</label><input id="sekolah"></div>
+    <div class="field"><label id="kelasLabel">Kelas yang didampingi / Kelas *</label><select id="kelas_responden"><option value="">Pilih kelas</option><option>VII</option><option>VIII</option><option>IX</option><option>X</option><option>XI</option><option>XII</option></select></div>
+    <div class="field full"><label>Nama Guru / Siswa / Fasilitator RTS <span style="font-weight:400;color:#94a3b8">(opsional)</span></label><input id="nama_responden"></div>
   </div>
 
 
@@ -277,7 +278,7 @@ let state={
 };
 
 const $=id=>document.getElementById(id);
-const fields=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah','nama_responden'];
+const fields=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah','kelas_responden','nama_responden'];
 
 function api(action,payload={}){
   return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload})})
@@ -290,14 +291,14 @@ function selectedData(){
 }
 function validateIdentity(){
   const d=selectedData();
-  return ['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah'].every(k=>d[k]);
+  return ['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah','kelas_responden'].every(k=>d[k]);
 }
 function updateStart(){
   // Tombol Mulai selalu aktif agar autofill/browser tidak membuat tombol terkunci.
   // Validasi dilakukan saat tombol ditekan dan field yang kurang akan ditunjukkan.
   $('startBtn').disabled=false;
 }
-fields.forEach(k=>$(k).addEventListener('input',updateStart));
+fields.forEach(k=>{ const el=$(k); if(el) el.addEventListener(el.tagName==='SELECT'?'change':'input',updateStart); });
 
 function setupSpeech(){
   state.recognitionAvailable=!!(window.MonevSTT && window.MonevSTT.browserSupported());
@@ -311,7 +312,9 @@ setupSpeech();
 document.querySelectorAll('.role').forEach(b=>{
   b.addEventListener('click',()=>{
     document.querySelectorAll('.role').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); state.role=b.dataset.role; updateStart();
+    b.classList.add('active'); state.role=b.dataset.role;
+    $('kelasLabel').textContent = state.role==='GURU' ? 'Kelas yang didampingi *' : 'Kelas *';
+    updateStart();
   });
 });
 
@@ -322,10 +325,10 @@ $('startBtn').onclick=async()=>{
     return;
   }
   const d=selectedData();
-  const required=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah'];
+  const required=['nama_personel','nip','jabatan','unit_satker','provinsi','kabupaten_kota','sekolah','kelas_responden'];
   const missing=required.filter(k=>!d[k]);
   if(missing.length){
-    const labels={nama_personel:'Nama Personel',nip:'NIP',jabatan:'Jabatan',unit_satker:'Unit / Satker',provinsi:'Provinsi',kabupaten_kota:'Kabupaten / Kota',sekolah:'Sekolah'};
+    const labels={nama_personel:'Nama Personel',nip:'NIP',jabatan:'Jabatan',unit_satker:'Unit / Satker',provinsi:'Provinsi',kabupaten_kota:'Kabupaten / Kota',sekolah:'Nama Sekolah',kelas_responden:'Kelas'};
     setNotice('browserNotice','warn','Lengkapi data wajib: <b>'+missing.map(k=>labels[k]).join(', ')+'</b>.');
     const first=$(missing[0]);
     first.focus(); first.scrollIntoView({behavior:'smooth',block:'center'});
@@ -352,7 +355,8 @@ $('resumeBtn').onclick=async()=>{
     const r=await api('resumeSession',{id_pengisian:id});
     if(!r.ok) throw new Error(r.error||'Pengisian tidak ditemukan.');
     const s=r.session; state.sessionId=id; state.role=s.jenis_responden;
-    fields.forEach(k=>$(k).value=s[k]||'');
+    fields.forEach(k=>{ if($(k)) $(k).value=s[k]||''; });
+    $('kelasLabel').textContent = state.role==='GURU' ? 'Kelas yang didampingi *' : 'Kelas *';
     const pr=await api('getProgress',{id_pengisian:id});
     const n=pr.ok?Number(pr.terjawab||0):0;
     state.questions=QUESTIONS[state.role].map((q,i)=>({question_id:(state.role==='GURU'?'G':'S')+String(i+1).padStart(2,'0'),no_pertanyaan:i+1,kelompok:state.role,pertanyaan:q}));
