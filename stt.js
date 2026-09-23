@@ -62,3 +62,6 @@ window.MonevSTT={
   startBrowser,
   stopBrowser
 };
+
+// Beri tahu halaman utama bahwa mesin STT sudah siap.
+try { window.dispatchEvent(new Event('monev-stt-ready')); } catch(e) {}

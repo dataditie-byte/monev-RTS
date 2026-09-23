@@ -303,6 +303,9 @@ function setupSpeech(){
   state.recognitionAvailable=!!(window.MonevSTT && window.MonevSTT.browserSupported());
   updateStart();
 }
+// stt.js adalah module (defer), sehingga script utama bisa dieksekusi lebih dahulu.
+// Dengarkan event siap agar fitur Suara + Rekam di laptop tetap aktif.
+window.addEventListener('monev-stt-ready', setupSpeech);
 setupSpeech();
 
 document.querySelectorAll('.role').forEach(b=>{
@@ -455,10 +458,16 @@ async function startRecording(){
       updateSaveButton();
     };
     state.mediaRecorder.start(250);
-    // Browser STT hanya dipakai sebagai fasilitas tambahan pada perangkat yang mendukungnya.
-    // Tidak ada fallback Whisper agar hasil HP tidak diganti oleh transkripsi yang buruk.
-    if(state.recognitionAvailable){
-      try{ startRecognition(); }catch(err){ state.recognitionAvailable=false; }
+    // Pada laptop/desktop yang mendukung SpeechRecognition, rekaman suara
+    // tetap sekaligus menghasilkan teks seperti versi yang sebelumnya sudah bagus.
+    // Pada HP yang tidak mendukungnya, pengguna tetap memakai mikrofon keyboard.
+    if(window.MonevSTT && window.MonevSTT.browserSupported()){
+      state.recognitionAvailable=true;
+      try{ startRecognition(); }catch(err){
+        // Rekaman audio tetap berjalan meskipun STT browser gagal.
+        state.recognition=null;
+        setNotice('recordNotice','warn','Rekaman tetap berjalan. Jika teks tidak muncul, gunakan mikrofon keyboard HP atau ketik jawaban.');
+      }
     }
     $('recStatus').textContent='Merekam... silakan berbicara.';
     $('recordBtn').disabled=true;$('stopBtn').disabled=false;
