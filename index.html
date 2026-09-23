@@ -68,7 +68,7 @@ input:focus,select:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(18,6
 .choice.no.active{border-color:var(--red);background:#fff0f2;color:#a51024}
 .record-box{margin-top:22px;border:1px solid #d9e2ec;border-radius:18px;background:#f8fafc;padding:22px}
 .rec-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.rec-title{font-weight:900;font-size:17px}.status{font-size:13px;font-weight:700;color:var(--muted);margin-top:4px}.mode-tabs{display:flex;gap:8px;margin:18px 0 14px}.mode-btn{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:11px;padding:11px 17px;font-weight:800;cursor:pointer}.mode-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}.editor-label{font-size:12px;font-weight:900;letter-spacing:.05em;color:#64748b;margin:14px 0 7px;text-transform:uppercase}.transcript-edit,.typed-answer{display:block;width:100%;min-height:150px;box-sizing:border-box;border:1px solid #b9c7d6;border-radius:12px;background:#fff;padding:15px;font:500 16px/1.6 system-ui,sans-serif;resize:vertical;color:#17263a;outline:none}.transcript-edit:focus,.typed-answer:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(18,61,116,.10)}.save-answer-btn{margin-top:12px;min-height:46px;padding:12px 20px;font-size:14px}.review-note{background:#eef5ff;color:#214b80;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;margin-top:10px}.record-actions{display:flex;gap:10px;flex-wrap:wrap}
+.rec-title{font-weight:900;font-size:17px}.status{font-size:13px;font-weight:700;color:var(--muted);margin-top:4px}.mode-tabs{display:flex;gap:8px;margin:18px 0 14px}.mode-btn{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:11px;padding:11px 17px;font-weight:800;cursor:pointer}.mode-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}.mode-btn:disabled{opacity:.45;cursor:not-allowed;background:#eef2f6;color:#64748b;border-color:#d7dee7}.editor-label{font-size:12px;font-weight:900;letter-spacing:.05em;color:#64748b;margin:14px 0 7px;text-transform:uppercase}.transcript-edit,.typed-answer{display:block;width:100%;min-height:150px;box-sizing:border-box;border:1px solid #b9c7d6;border-radius:12px;background:#fff;padding:15px;font:500 16px/1.6 system-ui,sans-serif;resize:vertical;color:#17263a;outline:none}.transcript-edit:focus,.typed-answer:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(18,61,116,.10)}.save-answer-btn{margin-top:12px;min-height:46px;padding:12px 20px;font-size:14px}.review-note{background:#eef5ff;color:#214b80;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;margin-top:10px}.record-actions{display:flex;gap:10px;flex-wrap:wrap}
 .rec-actions{display:flex;gap:9px;margin-top:12px}
 .rec-btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800}
 .rec-start{background:var(--red);color:#fff}.rec-stop{background:#e8edf2;color:#334155}
@@ -120,7 +120,7 @@ audio{width:100%;height:42px;margin-top:2px}
     <img class="intro-art" src="assets/header-war-on-drugs-humanity.webp" alt="">
     <div>
       <h2>Pengisian Monev RTS</h2>
-      <p>Pengisian dilakukan oleh personel Dit IE. Setiap jawaban terdiri dari pilihan <b>YA/TIDAK</b> dan penjelasan. Penjelasan dapat disampaikan melalui suara atau ditulis.</p>
+      <p>Pengisian dilakukan oleh personel Dit IE. Setiap jawaban terdiri dari pilihan <b>YA/TIDAK</b> dan penjelasan. Penjelasan ditulis pada kotak teks. Di HP, gunakan mikrofon pada keyboard untuk mengubah suara menjadi teks.</p>
     </div>
   </div>
 
@@ -188,24 +188,32 @@ audio{width:100%;height:42px;margin-top:2px}
         <div id="timer" class="timer">00:00</div>
       </div>
       <div class="mode-tabs">
-        <button id="voiceModeBtn" class="mode-btn active">🎙 Suara</button>
-        <button id="textModeBtn" class="mode-btn">⌨ Tulis Jawaban</button>
+        <button id="voiceModeBtn" class="mode-btn" type="button" disabled>🎙 Suara — dinonaktifkan</button>
+        <button id="textModeBtn" class="mode-btn active" type="button">⌨ Tulis Jawaban</button>
       </div>
-      <div id="voicePanel">
+
+      <div id="voicePanel" class="hidden" aria-hidden="true">
         <div class="record-actions">
-          <button id="recordBtn" class="rec-btn rec-start" disabled>🎙 Mulai Rekam</button>
-          <button id="stopBtn" class="rec-btn rec-stop" disabled>■ Hentikan</button>
+          <button id="recordBtn" class="rec-btn rec-start" type="button" disabled>🎙 Mulai Rekam — dinonaktifkan</button>
+          <button id="stopBtn" class="rec-btn rec-stop" type="button" disabled>■ Hentikan — dinonaktifkan</button>
         </div>
-        <button id="dictationBtn" type="button" class="btn btn-light" style="width:100%;margin-top:10px">🎙 Bicara ke Teks dengan Mikrofon HP</button>
-        <div id="dictationHelp" class="notice info" style="margin-top:10px">Tekan tombol ini, lalu ketuk ikon 🎙 pada keyboard HP dan ucapkan jawaban. Teks akan masuk ke kotak di bawah dan dapat diperiksa sebelum disimpan.</div>
-        <div class="wave"><i></i></div>
         <audio id="audioPreview" controls class="hidden"></audio>
       </div>
-      <div id="textPanel" class="hidden"></div>
+
+      <div id="textPanel">
+        <div class="review-note">
+          <b>Cara paling mudah mengisi penjelasan:</b><br>
+          1. Ketuk kotak <b>Teks Penjelasan</b> di bawah ini.<br>
+          2. Setelah keyboard HP muncul, ketuk ikon <b>🎙 Mikrofon</b> pada keyboard.<br>
+          3. Ucapkan penjelasan Anda. Suara akan berubah menjadi teks di kotak.<br>
+          4. Periksa teks, perbaiki bila perlu, lalu klik <b>Simpan Jawaban</b>.
+        </div>
+        <button id="dictationBtn" type="button" class="btn btn-primary" style="width:100%;margin-top:12px">🎙 Bicara ke Teks dengan Mikrofon HP</button>
+      </div>
+
       <div id="transcriptBox" class="transcript">
-        <div class="editor-label">Teks penjelasan</div>
-        <div id="reviewNote" class="review-note">Untuk suara: setelah berhenti merekam, periksa dan koreksi teks di bawah ini. Setelah benar, klik <b>Simpan Jawaban</b>. Untuk tulisan: langsung ketik di kotak ini.</div>
-        <textarea id="transcriptText" class="transcript-edit" placeholder="Tulis penjelasan Anda di sini. Jika menggunakan suara, hasil transkripsi akan muncul di kotak ini untuk diperiksa terlebih dahulu."></textarea>
+        <div class="editor-label">Teks Penjelasan</div>
+        <textarea id="transcriptText" class="transcript-edit" placeholder="Ketuk di sini, lalu gunakan tombol 🎙 Mikrofon pada keyboard HP untuk berbicara. Anda juga dapat mengetik langsung."></textarea>
         <button id="saveAnswerBtn" class="btn btn-primary save-answer-btn" disabled>✓ Simpan Jawaban</button>
       </div>
       <div id="recordNotice"></div>
@@ -274,7 +282,7 @@ let state={
   answers:{}, selected:'', transcriptFinal:'', transcriptInterim:'',
   mediaRecorder:null,chunks:[],audioBlob:null,audioUrl:'',
   recognition:null, recording:false, manualStop:false, recognitionAvailable:false,
-  timer:null, seconds:0, saving:false, inputMode:'VOICE'
+  timer:null, seconds:0, saving:false, inputMode:'TEXT'
 };
 
 const $=id=>document.getElementById(id);
@@ -375,7 +383,7 @@ function renderQuestion(){
   $('roleLabel').textContent=state.role==='GURU'?'GURU PENDAMPING RTS':'SISWA / FASILITATOR RTS';
   $('questionText').textContent=q.pertanyaan;
   const a=state.answers[q.question_id]||{};
-  state.selected=a.answer||'';state.transcriptFinal=a.transcript||'';state.transcriptInterim=''; state.inputMode=a.inputMode||'VOICE';
+  state.selected=a.answer||'';state.transcriptFinal=a.transcript||'';state.transcriptInterim=''; state.inputMode='TEXT';
   $('yesBtn').classList.toggle('active',state.selected==='YA');
   $('noBtn').classList.toggle('active',state.selected==='TIDAK');
   $('recordBtn').disabled=!state.selected;
@@ -387,7 +395,7 @@ function renderQuestion(){
   show('audioPreview',false);
   if(a.audioUrl){$('audioPreview').src=a.audioUrl;show('audioPreview',true)}
   setNotice('recordNotice','', '');
-  $('timer').textContent='00:00'; setInputMode(state.inputMode||'VOICE'); updateSaveButton(); 
+  $('timer').textContent='00:00'; setInputMode('TEXT'); updateSaveButton(); 
 }
 function chooseAnswer(v){
   if(state.recording) return;
@@ -396,7 +404,7 @@ function chooseAnswer(v){
   state.answers[q.question_id]=state.answers[q.question_id]||{};
   state.answers[q.question_id].answer=v;
   $('yesBtn').classList.toggle('active',v==='YA');$('noBtn').classList.toggle('active',v==='TIDAK');
-  $('recordBtn').disabled=false;$('nextBtn').disabled=true;
+  $('recordBtn').disabled=true;$('nextBtn').disabled=true;
   $('recStatus').textContent='Siap merekam penjelasan.';
 }
 $('yesBtn').onclick=()=>chooseAnswer('YA');
@@ -501,31 +509,33 @@ $('stopBtn').onclick=stopRecording;
 // Dikte HP: fokus ke textarea agar keyboard HP terbuka. Pengguna menekan ikon mikrofon
 // pada Gboard/Samsung Keyboard. Ini menggunakan mesin STT bawaan HP, bukan server aplikasi.
 $('dictationBtn').onclick=()=>{
-  if(state.recording) return setNotice('recordNotice','warn','Hentikan rekaman terlebih dahulu.');
   if(!state.selected) return setNotice('recordNotice','warn','Pilih YA atau TIDAK terlebih dahulu.');
   setInputMode('TEXT');
   const ta=$('transcriptText');
   ta.focus();
   ta.click();
-  setNotice('recordNotice','info','Kotak jawaban sudah aktif. Pada keyboard HP, tekan ikon 🎙 lalu ucapkan jawaban. Setelah selesai, periksa teks lalu klik <b>Simpan Jawaban</b>.');
-  $('recStatus').textContent='Silakan gunakan mikrofon pada keyboard HP.';
-  // Memudahkan perangkat mobile memunculkan keyboard tanpa memaksa input suara tertentu.
+  setNotice('recordNotice','info','Ketuk kotak <b>Teks Penjelasan</b>, kemudian pada keyboard HP ketuk ikon <b>🎙 Mikrofon</b>. Ucapkan penjelasan sampai selesai. Teks akan muncul di kotak dan dapat diperiksa sebelum disimpan.');
+  $('recStatus').textContent='Gunakan mikrofon pada keyboard HP untuk mengubah suara menjadi teks.';
   setTimeout(()=>{ try{ta.focus();}catch(e){} },150);
 };
 
 function setInputMode(mode){
+  // Mode suara/reka​m dinonaktifkan untuk pengisian. Fokus diarahkan ke teks.
+  if(mode!=='TEXT') mode='TEXT';
   if(state.recording)return;
-  state.inputMode=mode;
-  $('voiceModeBtn').classList.toggle('active',mode==='VOICE');
-  $('textModeBtn').classList.toggle('active',mode==='TEXT');
-  show('voicePanel',mode==='VOICE');
-  show('textPanel',false);
-  $('recStatus').textContent=mode==='VOICE' ? 'Pilih Mulai Rekam untuk menyimpan audio. Untuk teks di HP, gunakan mikrofon keyboard.' : 'Gunakan mikrofon keyboard HP atau ketik penjelasan, periksa kembali, lalu simpan.';
-  if(mode==='TEXT') $('transcriptText').focus();
+  state.inputMode='TEXT';
+  $('voiceModeBtn').classList.remove('active');
+  $('textModeBtn').classList.add('active');
+  $('voiceModeBtn').disabled=true;
+  $('textModeBtn').disabled=false;
+  show('voicePanel',false);
+  show('textPanel',true);
+  $('recStatus').textContent='Tulis penjelasan langsung atau gunakan mikrofon pada keyboard HP untuk mengubah suara menjadi teks.';
   updateSaveButton();
 }
-$('voiceModeBtn').onclick=()=>setInputMode('VOICE');
+$('voiceModeBtn').onclick=()=>setInputMode('TEXT');
 $('textModeBtn').onclick=()=>setInputMode('TEXT');
+
 function updateSaveButton(){
   const text=$('transcriptText').value.trim();
   $('saveAnswerBtn').disabled=!(state.selected&&text&&!state.recording&&!state.saving);
@@ -535,7 +545,7 @@ $('transcriptText').oninput=()=>{
   $('transcriptBox').classList.toggle('empty',!state.transcriptFinal);
   updateSaveButton();
 };
-$('saveAnswerBtn').onclick=()=>saveCurrentAnswer(state.inputMode==='VOICE' && state.audioBlob ? 'SUARA' : 'TEKS');
+$('saveAnswerBtn').onclick=()=>saveCurrentAnswer('TEKS');
 
 async function saveCurrentAnswer(mode){
   const q=state.questions[state.index];
@@ -556,7 +566,7 @@ async function saveCurrentAnswer(mode){
   }catch(e){
     $('saveState').textContent='Belum tersimpan';
     setNotice('recordNotice','error',e.message||'Gagal menyimpan jawaban.');
-  }finally{state.saving=false;$('recordBtn').disabled=!state.selected;updateSaveButton()}
+  }finally{state.saving=false;$('recordBtn').disabled=true;updateSaveButton()}
 }
 function blobToBase64(blob){
   return new Promise((resolve,reject)=>{
